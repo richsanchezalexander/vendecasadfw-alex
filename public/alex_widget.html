@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Alex — VendeCasaDFW</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;1,400&family=Source+Sans+3:wght@300;400;600&display=swap');
+
+:root {
+  --navy: #0C5394;
+  --blue: #3D85C6;
+  --light-blue: #9FC5E8;
+  --dark: #09152B;
+  --mid: #18233B;
+  --border: #1e3050;
+  --text: #F7F9FC;
+  --muted: #7D8CA5;
+  --white: #ffffff;
+  --bubble-user: #0C5394;
+  --bubble-alex: #18233B;
+  --radius: 18px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Source Sans 3', sans-serif;
+  background: #f0f4f8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 20px;
+}
+
+/* ── WIDGET LAUNCHER ── */
+.launcher {
+  position: fixed;
+  bottom: 28px;
+  right: 28px;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: var(--navy);
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 20px rgba(12,83,148,0.5);
+  transition: transform 0.2s, box-shadow 0.2s;
+  z-index: 1000;
+}
+
+.launcher:hover {
+  transform: scale(1.07);
+  box-shadow: 0 6px 28px rgba(12,83,148,0.65);
+}
+
+.launcher svg { width: 26px; height: 26px; fill: white; }
+.launcher .close-icon { display: none; }
+.launcher.open .chat-icon { display: none; }
+.launcher.open .close-icon { display: block; }
+
+/* ── CHAT WINDOW ── */
+.chat-window {
+  position: fixed;
+  bottom: 100px;
+  right: 28px;
+  width: 380px;
+  max-width: calc(100vw - 32px);
+  height: 580px;
+  max-height: calc(100vh - 120px);
+  background: var(--dark);
+  border-radius: 20px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.45), 0 0 0 1px rgba(255,255,255,0.06);
+  transform: scale(0.92) translateY(16px);
+  opacity: 0;
+  pointer-events: none;
+  transition: transform 0.25s cubic-bezier(0.34,1.56,0.64,1), opacity 0.2s ease;
+  z-index: 999;
+}
+
+.chat-window.open {
+  transform: scale(1) translateY(0);
+  opacity: 1;
+  pointer-events: all;
+}
+
+/* ── HEADER ── */
+.chat-header {
+  background: linear-gradient(135deg, var(--navy) 0%, #0a3d6e 100%);
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+}
+
+.avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--blue), var(--light-blue));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Lora', serif;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: white;
+  flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+
+.header-info { flex: 1; }
+
+.header-name {
+  font-family: 'Lora', serif;
+  font-size: 1rem;
+  font-weight: 600;
+  color: white;
+  line-height: 1.2;
+}
+
+.header-status {
+  font-size: 0.72rem;
+  color: rgba(255,255,255,0.6);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 2px;
+}
+
+.status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #4CAF82;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+.header-logo {
+  font-size: 0.65rem;
+  color: rgba(255,255,255,0.4);
+  text-align: right;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+/* ── MESSAGES ── */
+.messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  scroll-behavior: smooth;
+}
+
+.messages::-webkit-scrollbar { width: 4px; }
+.messages::-webkit-scrollbar-track { background: transparent; }
+.messages::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+.message {
+  display: flex;
+  flex-direction: column;
+  max-width: 88%;
+  animation: fadeUp 0.2s ease;
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.message.alex { align-self: flex-start; }
+.message.user { align-self: flex-end; }
+
+.bubble {
+  padding: 11px 15px;
+  border-radius: var(--radius);
+  font-size: 0.88rem;
+  line-height: 1.55;
+  word-break: break-word;
+}
+
+.message.alex .bubble {
+  background: var(--bubble-alex);
+  color: var(--text);
+  border-bottom-left-radius: 5px;
+  border: 1px solid rgba(255,255,255,0.06);
+}
+
+.message.user .bubble {
+  background: var(--bubble-user);
+  color: white;
+  border-bottom-right-radius: 5px;
+}
+
+.message-time {
+  font-size: 0.65rem;
+  color: var(--muted);
+  margin-top: 4px;
+  padding: 0 4px;
+}
+
+.message.user .message-time { text-align: right; }
+
+/* ── TYPING INDICATOR ── */
+.typing {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 12px 15px;
+  background: var(--bubble-alex);
+  border-radius: var(--radius);
+  border-bottom-left-radius: 5px;
+  border: 1px solid rgba(255,255,255,0.06);
+  width: fit-content;
+  animation: fadeUp 0.2s ease;
+}
+
+.typing span {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--muted);
+  animation: bounce 1.2s infinite;
+}
+
+.typing span:nth-child(2) { animation-delay: 0.2s; }
+.typing span:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes bounce {
+  0%, 60%, 100% { transform: translateY(0); }
+  30% { transform: translateY(-5px); }
+}
+
+/* ── INPUT AREA ── */
+.input-area {
+  padding: 12px 14px;
+  background: var(--mid);
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.input-wrap {
+  flex: 1;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid var(--border);
+  border-radius: 22px;
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  transition: border-color 0.15s;
+}
+
+.input-wrap:focus-within {
+  border-color: var(--blue);
+}
+
+textarea {
+  flex: 1;
+  background: none;
+  border: none;
+  outline: none;
+  color: var(--text);
+  font-family: 'Source Sans 3', sans-serif;
+  font-size: 0.88rem;
+  line-height: 1.4;
+  resize: none;
+  max-height: 100px;
+  overflow-y: auto;
+}
+
+textarea::placeholder { color: var(--muted); }
+
+.send-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--navy);
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background 0.15s, transform 0.1s;
+}
+
+.send-btn:hover { background: var(--blue); }
+.send-btn:active { transform: scale(0.93); }
+.send-btn:disabled { background: var(--border); cursor: not-allowed; }
+.send-btn svg { width: 18px; height: 18px; fill: white; }
+
+/* ── DISCLAIMER ── */
+.disclaimer {
+  text-align: center;
+  font-size: 0.62rem;
+  color: var(--muted);
+  padding: 6px 16px 10px;
+  background: var(--mid);
+}
+
+/* ── API KEY NOTICE ── */
+.api-notice {
+  background: rgba(232,146,74,0.1);
+  border: 1px solid rgba(232,146,74,0.3);
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 0.78rem;
+  color: #E8924A;
+  margin: 12px;
+  line-height: 1.5;
+  display: none;
+}
+
+.api-notice.visible { display: block; }
+</style>
+</head>
+<body>
+
+<!-- LAUNCHER BUTTON -->
+<button class="launcher" id="launcher" onclick="toggleChat()" aria-label="Abrir chat con Alex">
+  <svg class="chat-icon" viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/></svg>
+  <svg class="close-icon" viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+</button>
+
+<!-- CHAT WINDOW -->
+<div class="chat-window" id="chatWindow">
+
+  <div class="chat-header">
+    <div class="avatar">A</div>
+    <div class="header-info">
+      <div class="header-name">Alex</div>
+      <div class="header-status">
+        <div class="status-dot"></div>
+        Disponible ahora
+      </div>
+    </div>
+    <div class="header-logo">VendeCasaDFW</div>
+  </div>
+
+  <div class="api-notice" id="apiNotice">
+    ⚠️ Para activar Alex, reemplaza <strong>TU_API_KEY</strong> en el código con tu Anthropic API key.
+  </div>
+
+  <div class="messages" id="messages"></div>
+
+  <div class="input-area">
+    <div class="input-wrap">
+      <textarea
+        id="userInput"
+        placeholder="Escriba su mensaje..."
+        rows="1"
+        onkeydown="handleKey(event)"
+        oninput="autoResize(this)"
+      ></textarea>
+    </div>
+    <button class="send-btn" id="sendBtn" onclick="sendMessage()" aria-label="Enviar">
+      <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+    </button>
+  </div>
+
+  <div class="disclaimer">VendeCasaDFW · Sin costo · Sin compromiso</div>
+</div>
+
+<script>
+// ─────────────────────────────────────────
+// CONFIGURATION
+// No API key needed here — handled by Netlify proxy
+// ─────────────────────────────────────────
+const PROXY_URL = '/api/chat';
+
+const SYSTEM_PROMPT = `You are Alex, asesora de VendeCasaDFW. You help Spanish-speaking homeowners in the Dallas-Fort Worth area understand their options — whether to sell, rent, or explore other alternatives. You are warm, professional, and trustworthy. You never pressure, never judge, and never make promises you can't keep.
+
+LANGUAGE RULES:
+- You speak Spanish, English, or both — follow the user's lead without comment
+- Use "usted" consistently — formal but warm
+- If the user switches languages mid-conversation, follow naturally
+- Keep responses concise — 2-4 sentences maximum per message
+
+OPENING SEQUENCE (follow this exactly for first message):
+Start with: "¡Bienvenido! Soy Alex, su asesora en VendeCasaDFW. Puedo hablar español, inglés, o ambos. Puedo ayudarle a entender sus opciones como propietario — si le conviene vender, rentar, o explorar otras alternativas. Todo sin costo y sin compromiso. ¿Es usted propietario de una vivienda en el área de Dallas-Fort Worth?"
+
+BRANCH A — NOT a homeowner:
+Say: "Nuestros servicios están diseñados principalmente para propietarios, pero con gusto le escuchamos. ¿Cuál es la situación?"
+Listen, respond helpfully within VendeCasaDFW's limits, then offer: "Gracias por compartir esta información. ¿Le parece bien si le contactamos para poder discutir su situación a mayor detalle?"
+If yes → collect: name, phone, email (optional), preferred callback time
+If no → "Entendemos perfectamente. ¿Hay algo más que quisiera compartir con nosotros antes de terminar?"
+
+BRANCH B — IS a homeowner:
+Step 1: "¡Perfecto! Me gustaría hacerle algunas preguntas para entender mejor su situación. ¿Está de acuerdo?"
+Step 2: "¿Está considerando algún cambio con su propiedad — venderla, rentarla, o explorar otras opciones?"
+Step 3 (always ask): "¿Cuáles son las razones principales por las que está considerando este cambio?"
+If vague: "Entiendo. Para poder orientarle mejor, ¿podría contarme un poco más sobre lo que le llevó a considerar este cambio?"
+
+CONTACT COLLECTION (after "why" answer — peak trust moment):
+Say: "Gracias por compartir esta información. Para no perder estos detalles, ¿me podría proveer su nombre, número telefónico y correo electrónico (opcional)?"
+Then: "Para preparar nuestra conversación y servirle mejor, ¿me puede compartir la dirección de su propiedad?"
+Then: "Para agendar esa llamada, ¿cuál es el mejor horario para contactarle?"
+If no phone provided — move on without comment, never push.
+
+CATEGORY ROUTING (detect silently from user's "why" answer):
+
+CATEGORY 1 — FINANCIAL STRESS (missed payments, can't afford it, debts, taxes, repairs):
+Empathy: "Le entendemos. Estas situaciones son más comunes de lo que se imagina."
+Urgency: "¿Qué tan avanzada está esta situación en este momento?"
+- Early (1-2 months): "Es aún muy buen momento para considerar opciones. ¿A qué se debe esta situación?"
+- Mid (3-6 months): "Es absolutamente necesario explorar sus opciones a la brevedad. Antes de conectarle con uno de nuestros asesores, ¿me podría compartir a qué se debe esta situación?"
+- Critical (foreclosure in progress): "Entiendo — y quiero ser honesta con usted: en Texas, este proceso puede moverse muy rápido. Pero mientras no se haya realizado la venta, aún hay opciones. Es importante que uno de nuestros asesores se comunique con usted a la brevedad." → then collect contact info immediately → use URGENT CLOSING.
+
+CATEGORY 2 — LIFE EVENTS (divorce, inheritance, retirement, family change):
+"Es natural. Los eventos en nuestra vida cambian nuestras necesidades y opciones. ¿En cuánto tiempo requiere resolver esta situación?"
+- Urgente: "Entiendo, actuemos con prontitud entonces. Para poder orientarle mejor, ¿me puede contar un poco más sobre su situación?"
+- Tengo tiempo: "Qué bueno que está considerando sus opciones con tiempo — eso le da mucha más flexibilidad. ¿Qué es lo más importante para usted en este proceso?"
+
+CATEGORY 3 — PRACTICAL CHANGES (too big/small, relocation, tenant issues, buying another property):
+"Gracias por compartir esta información. Nuestras necesidades y requerimientos cambian con el tiempo. Para entender mejor su situación, ¿cuál es su mayor prioridad en este momento?"
+
+CATEGORY 4 — UNCERTAINTY/EXPLORATION:
+"¿Qué le llevó a explorar opciones para su propiedad en este momento?"
+Listen for signals → re-route to Category 1, 2, or 3 if detected. If still unclear after 2 exchanges → proceed to contact collection.
+
+CLOSING SEQUENCES:
+Standard: "Le agradecemos la oportunidad de orientarle en este proceso tan importante. Cada situación es única y haremos lo posible para diseñar la solución óptima a su conveniencia. Si desea conocer más mientras espera nuestra llamada, aquí puede encontrar más información sobre sus opciones: https://vendecasadfw.com/opciones-para-propietarios-dfw. ¡Hasta pronto!"
+Urgent (foreclosure only): "Le contactaremos en las próximas 24 horas. Cada hora cuenta y haremos todo lo posible para ayudarle. ¡Hasta pronto!"
+
+HARD LIMITS:
+- Never give legal, financial, or tax advice
+- Never say "you can save your home"
+- Never say "it's too late"
+- Never imply a human is available right now
+- Never ask for personal data without explaining why first
+- If legal/financial question asked: "Esa es una pregunta importante que merece la atención de uno de nuestros especialistas. ¿Hay alguna otra información que guste compartir con nosotros?" → then proceed to contact collection
+- Hard limits never dead-end the conversation — always route to contact collection`;
+
+// ─────────────────────────────────────────
+// STATE
+// ─────────────────────────────────────────
+let conversationHistory = [];
+let isLoading = false;
+let chatOpen = false;
+let alexStarted = false;
+
+// ─────────────────────────────────────────
+// UI CONTROLS
+// ─────────────────────────────────────────
+function toggleChat() {
+  chatOpen = !chatOpen;
+  const win = document.getElementById('chatWindow');
+  const btn = document.getElementById('launcher');
+  win.classList.toggle('open', chatOpen);
+  btn.classList.toggle('open', chatOpen);
+
+  if (chatOpen && !alexStarted) {
+    alexStarted = true;
+    startAlex();
+  }
+}
+
+function getTime() {
+  return new Date().toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' });
+}
+
+function addMessage(role, text) {
+  const container = document.getElementById('messages');
+
+  const wrapper = document.createElement('div');
+  wrapper.className = `message ${role}`;
+
+  const bubble = document.createElement('div');
+  bubble.className = 'bubble';
+  bubble.textContent = text;
+
+  const time = document.createElement('div');
+  time.className = 'message-time';
+  time.textContent = getTime();
+
+  wrapper.appendChild(bubble);
+  wrapper.appendChild(time);
+  container.appendChild(wrapper);
+  container.scrollTop = container.scrollHeight;
+
+  return bubble;
+}
+
+function showTyping() {
+  const container = document.getElementById('messages');
+  const typing = document.createElement('div');
+  typing.className = 'message alex';
+  typing.id = 'typingIndicator';
+  typing.innerHTML = '<div class="typing"><span></span><span></span><span></span></div>';
+  container.appendChild(typing);
+  container.scrollTop = container.scrollHeight;
+}
+
+function removeTyping() {
+  const t = document.getElementById('typingIndicator');
+  if (t) t.remove();
+}
+
+function setLoading(val) {
+  isLoading = val;
+  document.getElementById('sendBtn').disabled = val;
+  document.getElementById('userInput').disabled = val;
+}
+
+function autoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 100) + 'px';
+}
+
+function handleKey(e) {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    sendMessage();
+  }
+}
+
+// ─────────────────────────────────────────
+// API CALL
+// ─────────────────────────────────────────
+async function callAlex(userMessage) {
+  conversationHistory.push({ role: 'user', content: userMessage });
+
+  showTyping();
+  setLoading(true);
+
+  try {
+    const response = await fetch(PROXY_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ messages: conversationHistory })
+    });
+
+    const data = await response.json();
+
+    if (data.error) throw new Error(data.error);
+
+    const reply = data.reply;
+    conversationHistory.push({ role: 'assistant', content: reply });
+
+    removeTyping();
+    addMessage('alex', reply);
+
+  } catch (err) {
+    removeTyping();
+    addMessage('alex', 'Disculpe, hubo un problema técnico. Por favor intente de nuevo.');
+    console.error('Alex error:', err);
+  } finally {
+    setLoading(false);
+  }
+}
+
+// ─────────────────────────────────────────
+// START ALEX (opening message)
+// ─────────────────────────────────────────
+async function startAlex() {
+  setLoading(true);
+
+  const msg1 = '¡Bienvenido! Soy Alex, su asesora en VendeCasaDFW. Puedo hablar español, inglés, o ambos.';
+  const msg2 = 'Estoy aquí para ayudarle con su propiedad — sin costo y sin compromiso. ¿Es propietario en el área de Dallas-Fort Worth?';
+
+  // Message 1
+  showTyping();
+  await new Promise(r => setTimeout(r, 700));
+  removeTyping();
+  addMessage('alex', msg1);
+
+  // Brief pause — feels human
+  await new Promise(r => setTimeout(r, 600));
+
+  // Message 2
+  showTyping();
+  await new Promise(r => setTimeout(r, 800));
+  removeTyping();
+  addMessage('alex', msg2);
+
+  // Seed conversation history with the full opening so Alex has context
+  const fullOpening = msg1 + ' ' + msg2;
+  conversationHistory.push({ role: 'user', content: 'START_CONVERSATION' });
+  conversationHistory.push({ role: 'assistant', content: fullOpening });
+
+  setLoading(false);
+  document.getElementById('userInput').focus();
+}
+
+// ─────────────────────────────────────────
+// SEND MESSAGE
+// ─────────────────────────────────────────
+async function sendMessage() {
+  const input = document.getElementById('userInput');
+  const text = input.value.trim();
+  if (!text || isLoading) return;
+
+  input.value = '';
+  input.style.height = 'auto';
+  addMessage('user', text);
+  await callAlex(text);
+  document.getElementById('userInput').focus();
+}
+</script>
+
+</body>
+</html>
