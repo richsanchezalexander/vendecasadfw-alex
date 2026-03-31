@@ -619,6 +619,10 @@ async function sendMessage() {
   await callAlex(text);
   document.getElementById('userInput').focus();
 }
+
+window.addEventListener('DOMContentLoaded', function() {
+  toggleChat();
+});
 </script>
 
 </body>
