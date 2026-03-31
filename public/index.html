@@ -17,7 +17,7 @@
   --text: #F7F9FC;
   --muted: #7D8CA5;
   --white: #ffffff;
-  --bubble-user: #0C5394;
+  --bubble-user: #E8760A;
   --bubble-alex: #18233B;
   --radius: 18px;
 }
@@ -294,7 +294,7 @@ textarea::placeholder { color: var(--muted); }
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background: var(--navy);
+  background: #E8760A;
   border: none;
   cursor: pointer;
   display: flex;
@@ -304,7 +304,7 @@ textarea::placeholder { color: var(--muted); }
   transition: background 0.15s, transform 0.1s;
 }
 
-.send-btn:hover { background: var(--blue); }
+.send-btn:hover { background: #d06a08;}
 .send-btn:active { transform: scale(0.93); }
 .send-btn:disabled { background: var(--border); cursor: not-allowed; }
 .send-btn svg { width: 18px; height: 18px; fill: white; }
@@ -386,7 +386,7 @@ textarea::placeholder { color: var(--muted); }
 // CONFIGURATION
 // No API key needed here — handled by Netlify proxy
 // ─────────────────────────────────────────
-const PROXY_URL = '/api/chat';
+const PROXY_URL = 'https://vendecasadfw-alex.netlify.app/api/chat';
 
 const SYSTEM_PROMPT = `You are Alex, asesora de VendeCasaDFW. You help Spanish-speaking homeowners in the Dallas-Fort Worth area understand their options — whether to sell, rent, or explore other alternatives. You are warm, professional, and trustworthy. You never pressure, never judge, and never make promises you can't keep.
 
