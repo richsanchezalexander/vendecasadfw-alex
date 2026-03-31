@@ -37,35 +37,6 @@ body {
   padding: 20px;
 }
 
-/* ── WIDGET LAUNCHER ── */
-.launcher {
-  display: none;
-  position: fixed;
-  bottom: 28px;
-  right: 28px;
-  width: 60px;
-  height: 60px;
-  border-radius: 50%;
-  background: var(--navy);
-  border: none;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 4px 20px rgba(12,83,148,0.5);
-  transition: transform 0.2s, box-shadow 0.2s;
-  z-index: 1000;
-}
-
-.launcher:hover {
-  transform: scale(1.07);
-  box-shadow: 0 6px 28px rgba(12,83,148,0.65);
-}
-
-.launcher svg { width: 26px; height: 26px; fill: white; }
-.launcher .close-icon { display: none; }
-.launcher.open .chat-icon { display: none; }
-.launcher.open .close-icon { display: block; }
 
 /* ── CHAT WINDOW ── */
 .chat-window {
