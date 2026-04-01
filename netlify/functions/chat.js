@@ -1,14 +1,196 @@
 // VendeCasaDFW — Alex Proxy Function
 // Keeps Anthropic API key server-side, away from browser
+// Includes HubSpot CRM contact creation/update
+
+const HUBSPOT_API_BASE = 'https://api.hubapi.com';
+
+// ─────────────────────────────────────────
+// HUBSPOT HELPERS
+// ─────────────────────────────────────────
+
+async function ensureCustomProperties() {
+  const token = process.env.HUBSPOT_API_TOKEN;
+
+  const customProps = [
+    {
+      name: 'callback_time',
+      label: 'Horario de Contacto Preferido',
+      type: 'enumeration',
+      fieldType: 'select',
+      options: [
+        { label: 'Mañana (8am–12pm)', value: 'manana', displayOrder: 0, hidden: false },
+        { label: 'Tarde (12pm–5pm)', value: 'tarde', displayOrder: 1, hidden: false },
+        { label: 'Noche (5pm–8pm)', value: 'noche', displayOrder: 2, hidden: false },
+        { label: 'Fin de semana', value: 'fin_de_semana', displayOrder: 3, hidden: false },
+        { label: 'Cualquier hora', value: 'cualquier_hora', displayOrder: 4, hidden: false }
+      ]
+    },
+    {
+      name: 'alex_intent',
+      label: 'Alex — Intención del Propietario',
+      type: 'string',
+      fieldType: 'text'
+    },
+    {
+      name: 'alex_reason',
+      label: 'Alex — Razón del Cambio',
+      type: 'string',
+      fieldType: 'textarea'
+    },
+    {
+      name: 'alex_urgency',
+      label: 'Alex — Urgencia',
+      type: 'enumeration',
+      fieldType: 'select',
+      options: [
+        { label: 'Temprana (1-2 meses)', value: 'early', displayOrder: 0, hidden: false },
+        { label: 'Media (3-6 meses)', value: 'mid', displayOrder: 1, hidden: false },
+        { label: 'Crítica (ejecución en proceso)', value: 'critical', displayOrder: 2, hidden: false },
+        { label: 'No aplica', value: 'na', displayOrder: 3, hidden: false }
+      ]
+    },
+    {
+      name: 'alex_category',
+      label: 'Alex — Categoría',
+      type: 'enumeration',
+      fieldType: 'select',
+      options: [
+        { label: 'Estrés Financiero', value: 'financial_stress', displayOrder: 0, hidden: false },
+        { label: 'Evento de Vida', value: 'life_event', displayOrder: 1, hidden: false },
+        { label: 'Cambio Práctico', value: 'practical_change', displayOrder: 2, hidden: false },
+        { label: 'Exploración', value: 'exploration', displayOrder: 3, hidden: false }
+      ]
+    },
+    {
+      name: 'alex_conversation_summary',
+      label: 'Alex — Resumen de Conversación',
+      type: 'string',
+      fieldType: 'textarea'
+    }
+  ];
+
+  for (const prop of customProps) {
+    try {
+      const checkRes = await fetch(
+        `${HUBSPOT_API_BASE}/crm/v3/properties/contacts/${prop.name}`,
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+
+      if (checkRes.status === 404) {
+        const body = {
+          name: prop.name,
+          label: prop.label,
+          type: prop.type,
+          fieldType: prop.fieldType,
+          groupName: 'contactinformation',
+          ...(prop.options && { options: prop.options })
+        };
+
+        await fetch(`${HUBSPOT_API_BASE}/crm/v3/properties/contacts`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(body)
+        });
+
+        console.log(`Created property: ${prop.name}`);
+      }
+    } catch (err) {
+      console.error(`Error ensuring property ${prop.name}:`, err);
+    }
+  }
+}
+
+async function findContactByPhone(phone) {
+  const token = process.env.HUBSPOT_API_TOKEN;
+
+  const res = await fetch(`${HUBSPOT_API_BASE}/crm/v3/objects/contacts/search`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      filterGroups: [{
+        filters: [{
+          propertyName: 'mobilephone',
+          operator: 'EQ',
+          value: phone
+        }]
+      }],
+      properties: ['firstname', 'lastname', 'mobilephone', 'email'],
+      limit: 1
+    })
+  });
+
+  const data = await res.json();
+  if (data.results && data.results.length > 0) {
+    return data.results[0].id;
+  }
+  return null;
+}
+
+async function createOrUpdateContact(contactData) {
+  const token = process.env.HUBSPOT_API_TOKEN;
+
+  const properties = {};
+  if (contactData.firstname) properties.firstname = contactData.firstname;
+  if (contactData.lastname) properties.lastname = contactData.lastname;
+  if (contactData.mobilephone) properties.mobilephone = contactData.mobilephone;
+  if (contactData.email) properties.email = contactData.email;
+  if (contactData.address) properties.address = contactData.address;
+  if (contactData.callback_time) properties.callback_time = contactData.callback_time;
+  if (contactData.alex_intent) properties.alex_intent = contactData.alex_intent;
+  if (contactData.alex_reason) properties.alex_reason = contactData.alex_reason;
+  if (contactData.alex_urgency) properties.alex_urgency = contactData.alex_urgency;
+  if (contactData.alex_category) properties.alex_category = contactData.alex_category;
+  if (contactData.alex_conversation_summary) properties.alex_conversation_summary = contactData.alex_conversation_summary;
+
+  const existingId = await findContactByPhone(contactData.mobilephone);
+
+  if (existingId) {
+    await fetch(`${HUBSPOT_API_BASE}/crm/v3/objects/contacts/${existingId}`, {
+      method: 'PATCH',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ properties })
+    });
+    console.log(`Updated existing contact: ${existingId}`);
+    return { action: 'updated', id: existingId };
+  } else {
+    const res = await fetch(`${HUBSPOT_API_BASE}/crm/v3/objects/contacts`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ properties })
+    });
+    const data = await res.json();
+    console.log(`Created new contact: ${data.id}`);
+    return { action: 'created', id: data.id };
+  }
+}
+
+// ─────────────────────────────────────────
+// MAIN HANDLER
+// ─────────────────────────────────────────
 
 exports.handler = async function(event) {
 
-  // Only allow POST
   if (event.httpMethod !== 'POST') {
     return { statusCode: 405, body: 'Method Not Allowed' };
   }
 
-  // CORS headers — restrict to your domain in production
   const headers = {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Headers': 'Content-Type',
@@ -47,12 +229,29 @@ Step 3 (always ask): "¿Cuáles son las razones principales por las que está co
 If vague: "Entiendo. Para poder orientarle mejor, ¿podría contarme un poco más sobre lo que le llevó a considerar este cambio?"
 
 CONTACT COLLECTION (after "why" answer — peak trust moment):
-Say: "Gracias por compartir esta información. Para no perder estos detalles, ¿me podría proveer su nombre, número telefónico y correo electrónico (opcional)?"
+Say: "Gracias por compartir esta información. Para no perder estos detalles, ¿me podría proveer su nombre, número de celular y correo electrónico (opcional)?"
 Then: "Para preparar nuestra conversación y servirle mejor, ¿me puede compartir la dirección de su propiedad?"
-Then: "Para agendar esa llamada, ¿cuál es el mejor horario para contactarle?"
+Then: "Para agendar esa llamada, ¿cuál es el mejor horario para contactarle? Tenemos disponibilidad en la mañana (8am–12pm), tarde (12pm–5pm), noche (5pm–8pm), fin de semana, o cualquier hora."
 If no phone provided — move on without comment, never push.
 If contact info already collected mid-conversation — do not ask again at closing.
-If not collected — one gentle ask at closing: "Antes de despedirnos, ¿le importaría dejarnos su nombre y número telefónico para poder darle seguimiento?"
+If not collected — one gentle ask at closing: "Antes de despedirnos, ¿le importaría dejarnos su nombre y número de celular para poder darle seguimiento?"
+
+CONTACT CONFIRMATION (critical — execute after collecting callback time):
+Once you have collected the contact information, confirm it back to the user exactly like this:
+
+"Permítame confirmar sus datos:
+• Nombre: [first name] [last name]
+• Celular: [phone]
+• Correo: [email or 'No proporcionado']
+• Dirección: [address or 'No proporcionada']
+• Horario: [callback time]
+
+¿Es correcta esta información?"
+
+If the user confirms (sí, correcto, está bien, etc.) — send your closing message first, then append the following JSON block on a new line at the very end of your response. The user will not see this block:
+__CONTACT__{"firstname":"[first name]","lastname":"[last name]","mobilephone":"[phone]","email":"[email or empty string]","address":"[address or empty string]","callback_time":"[manana|tarde|noche|fin_de_semana|cualquier_hora]","alex_intent":"[what they want to do with their property]","alex_reason":"[their why — most important qualifying data]","alex_urgency":"[early|mid|critical|na]","alex_category":"[financial_stress|life_event|practical_change|exploration]","alex_conversation_summary":"[2-3 sentence summary for the advisor]"}__CONTACT__
+
+If the user says info is incorrect — ask them to correct it and repeat the confirmation step.
 
 CATEGORY ROUTING (detect silently from user's "why" answer):
 
@@ -97,7 +296,7 @@ HARD LIMITS:
       },
       body: JSON.stringify({
         model: 'claude-sonnet-4-6',
-        max_tokens: 500,
+        max_tokens: 800,
         system: SYSTEM_PROMPT,
         messages
       })
@@ -113,10 +312,38 @@ HARD LIMITS:
       };
     }
 
+    let reply = data.content[0].text;
+
+    // ─────────────────────────────────────────
+    // DETECT CONTACT MARKER & PUSH TO HUBSPOT
+    // ─────────────────────────────────────────
+    const markerRegex = /__CONTACT__(\{[\s\S]*?\})__CONTACT__/;
+    const match = reply.match(markerRegex);
+
+    if (match) {
+      try {
+        const contactData = JSON.parse(match[1]);
+
+        // Ensure custom properties exist in HubSpot
+        await ensureCustomProperties();
+
+        // Create or update contact
+        const result = await createOrUpdateContact(contactData);
+        console.log(`HubSpot contact ${result.action}: ${result.id}`);
+
+      } catch (err) {
+        console.error('HubSpot integration error:', err);
+        // Don't fail the user response — log and continue
+      }
+
+      // Strip marker from reply before sending to widget
+      reply = reply.replace(markerRegex, '').trim();
+    }
+
     return {
       statusCode: 200,
       headers,
-      body: JSON.stringify({ reply: data.content[0].text })
+      body: JSON.stringify({ reply })
     };
 
   } catch (err) {
