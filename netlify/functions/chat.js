@@ -176,8 +176,16 @@ async function createOrUpdateContact(contactData) {
       body: JSON.stringify({ properties })
     });
     const data = await res.json();
-    console.log(`Created new contact: ${data.id}`);
-    return { action: 'created', id: data.id };
+    console.log('HubSpot create status: ' + res.status);
+    console.log('HubSpot create body: ' + JSON.stringify(data));
+    console.log('Properties sent: ' + JSON.stringify(properties));
+    if (data.id) {
+      console.log('Created new contact: ' + data.id);
+      return { action: 'created', id: data.id };
+    } else {
+      console.error('HubSpot error: ' + JSON.stringify(data));
+      return { action: 'error', error: data };
+    }
   }
 }
 
