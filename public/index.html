@@ -615,7 +615,9 @@ async function sendMessage() {
 }
 
 window.addEventListener('DOMContentLoaded', function() {
-  toggleChat();
+  setTimeout(function() {
+    toggleChat();
+  }, 300);
 });
 </script>
 
