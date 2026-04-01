@@ -474,7 +474,9 @@ function addMessage(role, text) {
 
   const bubble = document.createElement('div');
   bubble.className = 'bubble';
-  bubble.textContent = text;
+  const escaped = text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  const linked = escaped.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" rel="noopener noreferrer" style="color:#9FC5E8;text-decoration:underline;">$1</a>');
+  bubble.innerHTML = linked;
 
   const time = document.createElement('div');
   time.className = 'message-time';
