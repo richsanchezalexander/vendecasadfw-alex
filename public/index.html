@@ -462,9 +462,7 @@ let alexStarted = false;
 function toggleChat() {
   chatOpen = !chatOpen;
   const win = document.getElementById('chatWindow');
-  const btn = document.getElementById('launcher');
   win.classList.toggle('open', chatOpen);
-  btn.classList.toggle('open', chatOpen);
 
   if (chatOpen && !alexStarted) {
     alexStarted = true;
