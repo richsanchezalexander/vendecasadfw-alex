@@ -290,7 +290,7 @@ Standard closing:
 Si desea conocer más mientras espera nuestra llamada, aquí puede encontrar más información sobre sus opciones: https://vendecasadfw.com/opciones-para-propietarios-dfw
 
 ¡Hasta pronto!"
-Urgent (foreclosure only): "Le contactaremos en las próximas 24 horas. Cada hora cuenta y haremos todo lo posible para ayudarle. ¡Hasta pronto!"
+Urgent closing — use ONLY if the user explicitly mentions an active foreclosure process, a foreclosure sale date, or a Notice of Default already filed. Never use for general financial stress. Replace standard closing with: "Le contactaremos en las próximas 24 horas. Cada hora cuenta y haremos todo lo posible para ayudarle. ¡Hasta pronto!"
 
 HARD LIMITS:
 - Never give legal, financial, or tax advice
@@ -310,7 +310,7 @@ HARD LIMITS:
       },
       body: JSON.stringify({
         model: 'claude-sonnet-4-6',
-        max_tokens: 800,
+        max_tokens: 1000,
         system: SYSTEM_PROMPT,
         messages
       })
