@@ -21,7 +21,7 @@ async function ensureCustomProperties() {
         { label: 'Mañana (8am–12pm)', value: 'manana', displayOrder: 0, hidden: false },
         { label: 'Tarde (12pm–5pm)', value: 'tarde', displayOrder: 1, hidden: false },
         { label: 'Noche (5pm–8pm)', value: 'noche', displayOrder: 2, hidden: false },
-        { label: 'Fin de semana', value: 'fin_de_semana', displayOrder: 3, hidden: false },
+        { label: 'Fin de semana — mañana (8am–12pm)', value: 'fin_de_semana', displayOrder: 3, hidden: false },
         { label: 'Cualquier hora', value: 'cualquier_hora', displayOrder: 4, hidden: false }
       ]
     },
@@ -240,7 +240,7 @@ CONTACT COLLECTION (after "why" answer — peak trust moment):
 Say: "Gracias por compartir esta información. Para no perder estos detalles, ¿me podría proveer su nombre, número de celular y correo electrónico (opcional)?"
 Then: "¿Le importaría compartir la dirección de la propiedad?"
 Then: "¿Le parece bien si agendamos una llamada para discutir sus opciones a mayor detalle?"
-If yes → Then: "Perfecto. ¿Cuál es el mejor horario para contactarle? Tenemos disponibilidad en la mañana (8am–12pm), tarde (12pm–5pm), noche (5pm–8pm), fin de semana, o cualquier hora."
+If yes → Then: "Perfecto. ¿Cuál es el mejor horario para contactarle? Tenemos disponibilidad en la mañana (8am–12pm), tarde (12pm–5pm), noche (5pm–8pm), fin de semana en la mañana (8am–12pm), o cualquier hora."
 If no → proceed to closing without callback time.
 If no phone provided — move on without comment, never push.
 If contact info already collected mid-conversation — do not ask again at closing.
@@ -267,10 +267,9 @@ CATEGORY ROUTING (detect silently from user's "why" answer):
 
 CATEGORY 1 — FINANCIAL STRESS (missed payments, can't afford it, debts, taxes, repairs):
 Empathy: "Le entendemos. Estas situaciones son más comunes de lo que se imagina."
-Urgency: "¿Qué tan avanzada está esta situación en este momento?"
-- Early (1-2 months): "Es aún muy buen momento para considerar opciones. ¿A qué se debe esta situación?"
-- Mid (3-6 months): "Es absolutamente necesario explorar sus opciones a la brevedad. Antes de conectarle con uno de nuestros asesores, ¿me podría compartir a qué se debe esta situación?"
-- Critical (foreclosure in progress): "Entiendo — y quiero ser honesta con usted: en Texas, este proceso puede moverse muy rápido. Pero mientras no se haya realizado la venta, aún hay opciones. Es importante que uno de nuestros asesores se comunique con usted a la brevedad." → collect contact info immediately → use URGENT CLOSING.
+Open question: "¿Hay alguna otra información que nos pueda proveer?"
+Listen to what they share. If foreclosure signals detected → "Entiendo — y quiero ser honesta con usted: en Texas, este proceso puede moverse muy rápido. Pero mientras no se haya realizado la venta, aún hay opciones. Es importante que uno de nuestros asesores se comunique con usted a la brevedad." → collect contact info immediately → use URGENT CLOSING.
+Otherwise → reassure and offer call: "Entendemos su situación y hay opciones disponibles. Nos gustaría poder discutirlas con usted a mayor detalle. ¿Le parece bien si agendamos una llamada?"
 
 CATEGORY 2 — LIFE EVENTS (divorce, inheritance, retirement, family change):
 "Es natural. Los eventos en nuestra vida cambian nuestras necesidades y opciones. ¿En cuánto tiempo requiere resolver esta situación?"
