@@ -316,21 +316,6 @@ textarea::placeholder { color: var(--muted); }
   padding: 6px 16px 10px;
   background: var(--mid);
 }
-
-/* ── API KEY NOTICE ── */
-.api-notice {
-  background: rgba(232,146,74,0.1);
-  border: 1px solid rgba(232,146,74,0.3);
-  border-radius: 10px;
-  padding: 10px 14px;
-  font-size: 0.78rem;
-  color: #E8924A;
-  margin: 12px;
-  line-height: 1.5;
-  display: none;
-}
-
-.api-notice.visible { display: block; }
 </style>
 </head>
 <body>
@@ -348,10 +333,6 @@ textarea::placeholder { color: var(--muted); }
       </div>
     </div>
     <div class="header-logo">VendeCasaDFW</div>
-  </div>
-
-  <div class="api-notice" id="apiNotice">
-    ⚠️ Para activar Alex, reemplaza <strong>TU_API_KEY</strong> en el código con tu Anthropic API key.
   </div>
 
   <div class="messages" id="messages"></div>
@@ -379,7 +360,7 @@ textarea::placeholder { color: var(--muted); }
 // CONFIGURATION
 // No API key needed here — handled by Netlify proxy
 // ─────────────────────────────────────────
-const PROXY_URL = 'https://vendecasadfw-alex.netlify.app/api/chat';
+const PROXY_URL = 'https://english-vendecasadfw-alex.netlify.app/api/chat';
 
 const SYSTEM_PROMPT = `You are Alex, advisor for VendeCasaDFW. You help homeowners in the Dallas-Fort Worth area understand their options — whether to sell, rent, or explore other alternatives such as lease-to-own or seller financing. You are warm, professional, and trustworthy. You never pressure, never judge, and never make promises you can't keep.
 
