@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, interactive-widget=resizes-content">
+<title>Alex — VendeCasaDFW</title>
+<script>
+  window.hsConversationsSettings = { loadImmediately: false };
+</script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap');
+
+:root {
+  --navy: #0C5394;
+  --blue: #3D85C6;
+  --light-blue: #9FC5E8;
+  --dark: #09152B;
+  --mid: #F7F9FC;
+  --border: #D3DAE4;
+  --text: #09152B;
+  --muted: #647390;
+  --white: #ffffff;
+  --bubble-user: #E8760A;
+  --bubble-alex: #ffffff;
+  --radius: 18px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Inter', sans-serif;
+  background: #ffffff;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+  padding: 0;
+}
+
+/* ── WIDGET LAUNCHER ── */
+.launcher {
+  position: fixed;
+  bottom: 28px;
+  right: 28px;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: var(--navy);
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 20px rgba(12,83,148,0.5);
+  transition: transform 0.2s, box-shadow 0.2s;
+  z-index: 1000;
+}
+
+.launcher:hover {
+  transform: scale(1.07);
+  box-shadow: 0 6px 28px rgba(12,83,148,0.65);
+}
+
+.launcher svg { width: 26px; height: 26px; fill: white; }
+.launcher .close-icon { display: none; }
+.launcher.open .chat-icon { display: none; }
+.launcher.open .close-icon { display: block; }
+
+/* ── CHAT WINDOW ── */
+.chat-window {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  background: var(--white);
+  border-radius: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+
+.chat-window.open {
+  opacity: 1;
+  pointer-events: all;
+}
+
+/* ── HEADER ── */
+.chat-header {
+  background: linear-gradient(135deg, var(--navy) 0%, #0a3d6e 100%);
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+}
+
+.avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--blue), var(--light-blue));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Inter', sans-serif;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: white;
+  flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+
+.header-info { flex: 1; }
+
+.header-name {
+  font-family: 'Inter', sans-serif;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: white;
+  line-height: 1.2;
+}
+
+.header-status {
+  font-size: 0.82rem;
+  color: rgba(255,255,255,0.7);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 3px;
+}
+
+.status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #4CAF82;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+.header-logo {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.75rem;
+  color: rgba(255,255,255,0.5);
+  text-align: right;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  font-weight: 500;
+}
+
+/* ── MESSAGES ── */
+.messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  scroll-behavior: smooth;
+}
+
+.messages::-webkit-scrollbar { width: 4px; }
+.messages::-webkit-scrollbar-track { background: transparent; }
+.messages::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+.message {
+  display: flex;
+  flex-direction: column;
+  max-width: 88%;
+  animation: fadeUp 0.2s ease;
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.message.alex { align-self: flex-start; }
+.message.user { align-self: flex-end; }
+
+.bubble {
+  padding: 12px 16px;
+  border-radius: var(--radius);
+  font-size: 1rem;
+  line-height: 1.6;
+  word-break: break-word;
+}
+
+.message.alex .bubble {
+  background: var(--bubble-alex);
+  color: var(--text);
+  border-bottom-left-radius: 5px;
+  border: 1px solid var(--border);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+}
+
+.message.user .bubble {
+  background: var(--bubble-user);
+  color: white;
+  border-bottom-right-radius: 5px;
+}
+
+.message-time {
+  font-size: 0.72rem;
+  color: var(--muted);
+  margin-top: 4px;
+  padding: 0 4px;
+}
+
+.message.user .message-time { text-align: right; }
+
+/* ── TYPING INDICATOR ── */
+.typing {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 12px 15px;
+  background: var(--bubble-alex);
+  border-radius: var(--radius);
+  border-bottom-left-radius: 5px;
+  border: 1px solid var(--border);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  width: fit-content;
+  animation: fadeUp 0.2s ease;
+}
+
+.typing span {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--muted);
+  animation: bounce 1.2s infinite;
+}
+
+.typing span:nth-child(2) { animation-delay: 0.2s; }
+.typing span:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes bounce {
+  0%, 60%, 100% { transform: translateY(0); }
+  30% { transform: translateY(-5px); }
+}
+
+/* ── INPUT AREA ── */
+.input-area {
+  padding: 12px 14px;
+  background: var(--mid);
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.input-wrap {
+  flex: 1;
+  background: #ffffff;
+  border: 1px solid var(--border);
+  border-radius: 22px;
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  transition: border-color 0.15s;
+}
+
+.input-wrap:focus-within {
+  border-color: var(--blue);
+}
+
+textarea {
+  flex: 1;
+  background: none;
+  border: none;
+  outline: none;
+  color: var(--text);
+  font-family: 'Inter', sans-serif;
+  font-size: 1rem;
+  line-height: 1.4;
+  resize: none;
+  max-height: 100px;
+  overflow-y: auto;
+}
+
+textarea::placeholder { color: var(--muted); }
+
+.send-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #E8760A;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background 0.15s, transform 0.1s;
+}
+
+.send-btn:hover { background: #d06a08;}
+.send-btn:active { transform: scale(0.93); }
+.send-btn:disabled { background: var(--border); cursor: not-allowed; }
+.send-btn svg { width: 18px; height: 18px; fill: white; }
+
+/* ── DISCLAIMER ── */
+.disclaimer {
+  text-align: center;
+  font-size: 0.62rem;
+  color: var(--muted);
+  padding: 6px 16px 10px;
+  background: var(--mid);
+}
+
+/* ── API KEY NOTICE ── */
+.api-notice {
+  background: rgba(232,146,74,0.1);
+  border: 1px solid rgba(232,146,74,0.3);
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 0.78rem;
+  color: #E8924A;
+  margin: 12px;
+  line-height: 1.5;
+  display: none;
+}
+
+.api-notice.visible { display: block; }
+</style>
+</head>
+<body>
+
+<!-- CHAT WINDOW -->
+<div class="chat-window" id="chatWindow">
+
+  <div class="chat-header">
+    <div class="avatar">A</div>
+    <div class="header-info">
+      <div class="header-name">Alex</div>
+      <div class="header-status">
+        <div class="status-dot"></div>
+        Available now
+      </div>
+    </div>
+    <div class="header-logo">VendeCasaDFW</div>
+  </div>
+
+  <div class="api-notice" id="apiNotice">
+    ⚠️ Para activar Alex, reemplaza <strong>TU_API_KEY</strong> en el código con tu Anthropic API key.
+  </div>
+
+  <div class="messages" id="messages"></div>
+
+  <div class="input-area">
+    <div class="input-wrap">
+      <textarea
+        id="userInput"
+        placeholder="Type your message..."
+        rows="1"
+        onkeydown="handleKey(event)"
+        oninput="autoResize(this)"
+      ></textarea>
+    </div>
+    <button class="send-btn" id="sendBtn" onclick="sendMessage()" aria-label="Enviar">
+      <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+    </button>
+  </div>
+
+  <div class="disclaimer">VendeCasaDFW · No cost · No obligation · English & Spanish</div>
+</div>
+
+<script>
+// ─────────────────────────────────────────
+// CONFIGURATION
+// No API key needed here — handled by Netlify proxy
+// ─────────────────────────────────────────
+const PROXY_URL = 'https://english-vendecasadfw-alex.netlify.app/api/chat';
+
+const SYSTEM_PROMPT = `You are Alex, advisor for VendeCasaDFW. You help homeowners in the Dallas-Fort Worth area understand their options — whether to sell, rent, or explore other alternatives such as lease-to-own or seller financing. You are warm, professional, and trustworthy. You never pressure, never judge, and never make promises you can't keep.
+
+LANGUAGE RULES:
+- You open and default in English
+- If the user writes in Spanish at any point, switch naturally to Spanish and continue in Spanish
+- If the user switches back to English, follow naturally
+- Use "you" in English, "usted" in Spanish — always formal but warm
+- Keep responses concise — 2-4 sentences maximum per message
+
+BRANCH A — NOT a homeowner:
+Say: "Our services are designed primarily for homeowners, but we're happy to listen. What's your situation?"
+Listen, respond helpfully within VendeCasaDFW's limits, then offer: "Thank you for sharing that. Would it be okay if we contacted you to discuss your situation in more detail?"
+If yes → collect: name, phone, email (optional), preferred callback time
+If no → "We completely understand. Is there anything else you'd like to share before we wrap up?"
+
+BRANCH B — IS a homeowner:
+Step 1: "Great! I'd like to ask you a few questions to better understand your situation. Is that okay?"
+Step 2: "Are you considering making a change with your property — selling it, renting it out, or exploring other options?"
+Step 3 (always ask): "What are the main reasons you're considering this change?"
+If vague: "I understand. To better guide you, could you tell me a bit more about what led you to consider this?"
+
+CONTACT COLLECTION (after "why" answer — peak trust moment):
+Say: "Thank you for sharing that. So I don't lose these details, could you provide your name, phone number, and email (optional)?"
+Then: "Would you mind sharing the property address?"
+Then: "Would it work to schedule a call to discuss your options in more detail?"
+If yes → Then: "Perfect. What's the best time to reach you? We have availability in the morning (8am–12pm), afternoon (12pm–5pm), evening (5pm–8pm), weekend mornings (8am–12pm), or any time."
+If no → proceed to closing without callback time.
+If no phone provided — move on without comment, never push.
+If contact info already collected mid-conversation — do not ask again at closing.
+If not collected — one gentle ask at closing: "Before we wrap up, would you mind leaving your name and phone number so we can follow up?"
+
+CONTACT CONFIRMATION (critical — execute after collecting callback time):
+Once you have collected the contact information, confirm it back to the user exactly like this:
+
+"Let me confirm your details:
+• Name: [first name] [last name]
+• Phone: [phone]
+• Email: [email or 'Not provided']
+• Address: [address or 'Not provided']
+• Best time to call: [callback time]
+
+Is this information correct?"
+
+If the user confirms (yes, correct, that's right, etc.) — send your closing message first, then append the following JSON block on a new line at the very end of your response. The user will not see this block:
+__CONTACT__{"firstname":"[first name]","lastname":"[last name]","mobilephone":"[phone]","email":"[email or empty string]","address":"[address or empty string]","callback_time":"[manana|tarde|noche|fin_de_semana|cualquier_hora]","alex_intent":"[what they want to do with their property]","alex_reason":"[their why — most important qualifying data]","alex_urgency":"[early|mid|critical|na]","alex_category":"[financial_stress|life_event|practical_change|exploration]","alex_conversation_summary":"[2-3 sentence summary for the advisor]"}__CONTACT__
+
+If the user says info is incorrect — ask them to correct it and repeat the confirmation step.
+
+CATEGORY ROUTING (detect silently from user's "why" answer):
+
+CATEGORY 1 — FINANCIAL STRESS (missed payments, can't afford it, debts, taxes, repairs):
+Empathy: "We understand. These situations are more common than you might think."
+Open question: "Is there any other information you can share with us?"
+Listen to what they share. If foreclosure signals detected → "I want to be straightforward with you: in Texas, this process can move very quickly. But as long as the sale hasn't taken place, there are still options. It's important that one of our advisors reaches out to you as soon as possible." → collect contact info immediately → use URGENT CLOSING.
+Otherwise → reassure and offer call: "We understand your situation and there are options available. We'd like to discuss them with you in more detail. Would you be open to scheduling a call?"
+
+CATEGORY 2 — LIFE EVENTS (divorce, inheritance, retirement, family change):
+"That's understandable. Life events change our needs and options. How soon do you need to resolve this?"
+- Urgent: "Got it — let's move quickly then. To better guide you, can you tell me a bit more about your situation?"
+- Have time: "It's great that you're considering your options early — that gives you a lot more flexibility. What matters most to you in this process?"
+
+CATEGORY 3 — PRACTICAL CHANGES (too big/small, relocation, tenant issues, buying another property):
+"Thank you for sharing that. Our needs change over time. To better understand your situation, what is your biggest priority right now?"
+
+CATEGORY 4 — UNCERTAINTY/EXPLORATION:
+"What led you to explore options for your property at this point?"
+Listen for signals → re-route to Category 1, 2, or 3 if detected. If still unclear after 2 exchanges → proceed to contact collection.
+
+CLOSING SEQUENCES:
+Standard closing:
+"Perfect, [first name]. We'll confirm your call for [callback time]. Our team will be in touch soon.
+
+If you'd like to learn more while you wait, you can find more information about your options here: https://vendecasadfw.com/opciones-para-propietarios-dfw
+
+Talk soon!"
+
+Urgent closing — use ONLY if the user explicitly mentions an active foreclosure process, a foreclosure sale date, or a Notice of Default already filed. Never use for general financial stress:
+"We'll reach out within the next 24 hours. Every hour matters and we'll do everything we can to help. Talk soon!"
+
+HARD LIMITS:
+- Never give legal, financial, or tax advice
+- Never say "you can save your home"
+- Never say "it's too late"
+- Never imply a human is available right now
+- Never ask for personal data without explaining why first
+- If legal/financial question asked: "That's an important question that deserves the attention of one of our specialists. Is there anything else you'd like to share?" → proceed to contact collection
+- Hard limits never dead-end the conversation`;
+
+// ─────────────────────────────────────────
+// STATE
+// ─────────────────────────────────────────
+let conversationHistory = [];
+let isLoading = false;
+let chatOpen = false;
+let alexStarted = false;
+
+// ─────────────────────────────────────────
+// UI CONTROLS
+// ─────────────────────────────────────────
+function toggleChat() {
+  chatOpen = !chatOpen;
+  const win = document.getElementById('chatWindow');
+  win.classList.toggle('open', chatOpen);
+
+  if (chatOpen && !alexStarted) {
+    alexStarted = true;
+    startAlex();
+  }
+}
+
+function getTime() {
+  return new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+}
+
+function addMessage(role, text) {
+  const container = document.getElementById('messages');
+
+  const wrapper = document.createElement('div');
+  wrapper.className = `message ${role}`;
+
+  const bubble = document.createElement('div');
+  bubble.className = 'bubble';
+  const escaped = text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  const linked = escaped.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" rel="noopener noreferrer" style="color:#9FC5E8;text-decoration:underline;">$1</a>');
+  bubble.innerHTML = linked;
+
+  const time = document.createElement('div');
+  time.className = 'message-time';
+  time.textContent = getTime();
+
+  wrapper.appendChild(bubble);
+  wrapper.appendChild(time);
+  container.appendChild(wrapper);
+  container.scrollTop = container.scrollHeight;
+
+  return bubble;
+}
+
+function showTyping() {
+  const container = document.getElementById('messages');
+  const typing = document.createElement('div');
+  typing.className = 'message alex';
+  typing.id = 'typingIndicator';
+  typing.innerHTML = '<div class="typing"><span></span><span></span><span></span></div>';
+  container.appendChild(typing);
+  container.scrollTop = container.scrollHeight;
+}
+
+function removeTyping() {
+  const t = document.getElementById('typingIndicator');
+  if (t) t.remove();
+}
+
+function setLoading(val) {
+  isLoading = val;
+  document.getElementById('sendBtn').disabled = val;
+  document.getElementById('userInput').disabled = val;
+}
+
+function autoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 100) + 'px';
+}
+
+function handleKey(e) {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    sendMessage();
+  }
+}
+
+// ─────────────────────────────────────────
+// API CALL
+// ─────────────────────────────────────────
+async function callAlex(userMessage) {
+  conversationHistory.push({ role: 'user', content: userMessage });
+
+  showTyping();
+  setLoading(true);
+
+  try {
+    const response = await fetch(PROXY_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ messages: conversationHistory })
+    });
+
+    const data = await response.json();
+
+    if (data.error) throw new Error(data.error);
+
+    const reply = data.reply;
+    conversationHistory.push({ role: 'assistant', content: reply });
+
+    removeTyping();
+    addMessage('alex', reply);
+
+  } catch (err) {
+    removeTyping();
+    addMessage('alex', 'Sorry, there was a technical issue. Please try again.');
+    console.error('Alex error:', err);
+  } finally {
+    setLoading(false);
+  }
+}
+
+// ─────────────────────────────────────────
+// START ALEX (opening message)
+// ─────────────────────────────────────────
+async function startAlex() {
+  setLoading(true);
+
+  const msg1 = 'Hi! I\'m Alex, your VendeCasaDFW advisor. I can help in English, Spanish, or both.';
+  const msg2 = 'I\'m here to help you understand your options as a homeowner — at no cost and with no obligation. Are you a homeowner in the Dallas-Fort Worth area?';
+
+  // Message 1
+  showTyping();
+  await new Promise(r => setTimeout(r, 700));
+  removeTyping();
+  addMessage('alex', msg1);
+
+  // Brief pause — feels human
+  await new Promise(r => setTimeout(r, 600));
+
+  // Message 2
+  showTyping();
+  await new Promise(r => setTimeout(r, 800));
+  removeTyping();
+  addMessage('alex', msg2);
+
+  // Seed conversation history with the full opening so Alex has context
+  const fullOpening = msg1 + ' ' + msg2;
+  conversationHistory.push({ role: 'user', content: 'START_CONVERSATION' });
+  conversationHistory.push({ role: 'assistant', content: fullOpening });
+
+  setLoading(false);
+  document.getElementById('userInput').focus();
+}
+
+// ─────────────────────────────────────────
+// SEND MESSAGE
+// ─────────────────────────────────────────
+async function sendMessage() {
+  const input = document.getElementById('userInput');
+  const text = input.value.trim();
+  if (!text || isLoading) return;
+
+  input.value = '';
+  input.style.height = 'auto';
+  addMessage('user', text);
+  await callAlex(text);
+  document.getElementById('userInput').focus();
+}
+
+window.addEventListener('DOMContentLoaded', function() {
+  setTimeout(function() {
+    toggleChat();
+  }, 300);
+});
+</script>
+
+</body>
+</html>
