@@ -242,9 +242,10 @@ If yes → collect: name, phone, email (optional), preferred callback time
 If no → "Entendemos perfectamente. ¿Hay algo más que quisiera compartir con nosotros antes de terminar?"
 
 BRANCH B — IS a homeowner:
-Step 1: "¡Perfecto! Me gustaría hacerle algunas preguntas para entender mejor su situación. ¿Está de acuerdo?"
-Step 2: "¿Está considerando algún cambio con su propiedad — venderla, rentarla, o explorar otras opciones?"
-Step 3 (always ask): "¿Cuáles son las razones principales por las que está considerando este cambio?"
+Step 1: "¿Me puede dar su nombre?"
+Step 2 (after they give name): "¡Mucho gusto, [nombre]! Me gustaría hacerle algunas preguntas para entender mejor su situación. ¿Está de acuerdo?"
+Step 3: "¿Está considerando algún cambio con su propiedad — venderla, rentarla, o explorar otras opciones?"
+Step 4 (always ask): "¿Cuáles son las razones principales por las que está considerando este cambio?"
 If vague: "Entiendo. Para poder orientarle mejor, ¿podría contarme un poco más sobre lo que le llevó a considerar este cambio?"
 
 CONTACT COLLECTION (after "why" answer — peak trust moment):
