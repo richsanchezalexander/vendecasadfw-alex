@@ -14,7 +14,7 @@ async function ensureCustomProperties() {
   const customProps = [
     {
       name: 'callback_time',
-      label: 'Horario de Contacto Preferido',
+      label: 'Preferred Contact Time',
       type: 'enumeration',
       fieldType: 'select',
       options: [
@@ -27,19 +27,19 @@ async function ensureCustomProperties() {
     },
     {
       name: 'alex_intent',
-      label: 'Alex — Intención del Propietario',
+      label: 'Alex — Owner Intent',
       type: 'string',
       fieldType: 'text'
     },
     {
       name: 'alex_reason',
-      label: 'Alex — Razón del Cambio',
+      label: 'Alex — Reason for Change',
       type: 'string',
       fieldType: 'textarea'
     },
     {
       name: 'alex_urgency',
-      label: 'Alex — Urgencia',
+      label: 'Alex — Urgency',
       type: 'enumeration',
       fieldType: 'select',
       options: [
@@ -51,7 +51,7 @@ async function ensureCustomProperties() {
     },
     {
       name: 'alex_category',
-      label: 'Alex — Categoría',
+      label: 'Alex — Category',
       type: 'enumeration',
       fieldType: 'select',
       options: [
@@ -63,9 +63,19 @@ async function ensureCustomProperties() {
     },
     {
       name: 'alex_conversation_summary',
-      label: 'Alex — Resumen de Conversación',
+      label: 'Alex — Conversation Summary',
       type: 'string',
       fieldType: 'textarea'
+    },
+    {
+      name: 'alex_contact_language',
+      label: 'Alex — Contact Language',
+      type: 'enumeration',
+      fieldType: 'select',
+      options: [
+        { label: 'Spanish', value: 'es', displayOrder: 0, hidden: false },
+        { label: 'English', value: 'en', displayOrder: 1, hidden: false }
+      ]
     }
   ];
 
@@ -152,6 +162,7 @@ async function createOrUpdateContact(contactData) {
   if (contactData.alex_urgency) properties.alex_urgency = contactData.alex_urgency;
   if (contactData.alex_category) properties.alex_category = contactData.alex_category;
   if (contactData.alex_conversation_summary) properties.alex_conversation_summary = contactData.alex_conversation_summary;
+  if (contactData.alex_contact_language) properties.alex_contact_language = contactData.alex_contact_language;
 
   const existingId = await findContactByPhone(contactData.mobilephone);
 
@@ -261,7 +272,7 @@ Once you have collected the contact information, confirm it back to the user exa
 Is this information correct?"
 
 If the user confirms (yes, correct, that's right, etc.) — send your closing message first, then append the following JSON block on a new line at the very end of your response. The user will not see this block:
-__CONTACT__{"firstname":"[first name]","lastname":"[last name]","mobilephone":"[phone]","email":"[email or empty string]","address":"[address or empty string]","callback_time":"[manana|tarde|noche|fin_de_semana|cualquier_hora]","alex_intent":"[what they want to do with their property]","alex_reason":"[their why — most important qualifying data]","alex_urgency":"[early|mid|critical|na]","alex_category":"[financial_stress|life_event|practical_change|exploration]","alex_conversation_summary":"[2-3 sentence summary for the advisor]"}__CONTACT__
+__CONTACT__{"firstname":"[first name]","lastname":"[last name]","mobilephone":"[phone]","email":"[email or empty string]","address":"[address or empty string]","callback_time":"[manana|tarde|noche|fin_de_semana|cualquier_hora]","alex_intent":"[what they want to do with their property]","alex_reason":"[their why — most important qualifying data]","alex_urgency":"[early|mid|critical|na]","alex_category":"[financial_stress|life_event|practical_change|exploration]","alex_conversation_summary":"[2-3 sentence summary for the advisor]","alex_contact_language":"en"}__CONTACT__
 
 If the user says info is incorrect — ask them to correct it and repeat the confirmation step.
 
